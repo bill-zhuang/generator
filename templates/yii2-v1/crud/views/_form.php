@@ -59,16 +59,3 @@ use yii\widgets\ActiveForm;
     <?= "<?php " ?>ActiveForm::end(); ?>
 
 </div>
-<script>
-    <?= '<?php $this->beginBlock(\'additionJs\') ?>' . PHP_EOL ?>
-    $(document).ready(function () {
-        $(".ckMark").click(function() {
-            if ($(this).is(':checked')) {
-                $(".ckMark").prop("checked", false);
-                $(this).prop("checked", true);
-            }
-        });
-    });
-    <?= '<?php $this->endBlock() ?>' . PHP_EOL; ?>
-    <?= '<?php $this->registerJs($this->blocks[\'additionJs\']) ?>' . PHP_EOL; ?>
-</script>
