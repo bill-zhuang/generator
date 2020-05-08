@@ -23,6 +23,14 @@ $pks = $class::primaryKey();
 $urlParams = $generator->generateUrlParams();
 $actionParams = $generator->generateActionParams();
 $actionParamComments = $generator->generateActionParamComments();
+$enableField = '';
+
+foreach ($generator->getTableSchema()->columns as $column) {
+    if (strpos($column->name, 'enable') !== false) {
+        $enableField = $column->name;
+        break;
+    }
+}
 
 echo "<?php\n";
 ?>
@@ -161,6 +169,32 @@ class <?= $controllerClass ?> extends <?= StringHelper::basename($generator->bas
             return $this->redirect(['index']);
         }
     }
+<?php if ($enableField != '') { echo PHP_EOL; ?>
+    public function actionUpdateEnable()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $id = Yii::$app->request->post("id");
+        $isEnable = Yii::$app->request->post("value");
+        $flag = false;
+        if (($model = $this->findModel($id)) !== null) {
+            $model-><?= $enableField ?> = ($isEnable ? <?= $modelClass ?>::ENABLE_YES : <?= $modelClass ?>::ENABLE_NO);
+            $flag = $model->save();
+        }
+
+        if ($flag) {
+            return [
+                'code' => 0,
+                'msg' => '修改成功',
+            ];
+        } else {
+            return [
+                'code' => 1,
+                'msg' => '修改失败',
+            ];
+        }
+    }
+<?php } ?>
 
     /**
      * Finds the <?= $modelClass ?> model based on its primary key value.

@@ -12,12 +12,19 @@ $safeAttributes = $model->safeAttributes();
 if (empty($safeAttributes)) {
     $safeAttributes = $model->attributes();
 }
+$useModel = false;
+if (strpos(implode('|', $safeAttributes), 'enable') !== false) {
+    $useModel = true;
+}
+$modelNames = explode('\\', $generator->modelClass);
+$modelName = $modelNames[count($modelNames) - 1];
 
 echo "<?php\n";
 ?>
 
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
+<?php if ($useModel) { echo 'use ' . $generator->modelClass . ';' . PHP_EOL; } ?>
 
 /* @var $this yii\web\View */
 /* @var $model <?= ltrim($generator->modelClass, '\\') ?> */
@@ -39,13 +46,15 @@ use yii\widgets\ActiveForm;
     ]); ?>
 
 <?php foreach ($generator->getColumnNames() as $attribute) {
-    if (in_array($attribute, $safeAttributes) && (
-            strpos($attribute, 'create_at') === false &&
-            strpos($attribute, 'created_at') === false &&
-            strpos($attribute, 'update_at') === false &&
-            strpos($attribute, 'updated_at') === false
-        )) {
-        echo "    <?= " . $generator->generateActiveField($attribute) . " ?>\n\n";
+    if (in_array($attribute, $safeAttributes)) {
+        $ignoreFields = ['create_at', 'created_at', 'create_time', 'update_at', 'updated_at', 'update_time', 'status'];
+        if (strpos(implode('|', $ignoreFields), $attribute) !== false) {
+            continue;
+        } elseif (strpos($attribute, 'enable') !== false) {
+            echo "    <?= \$form->field(\$model, '{$attribute}')->radioList({$modelName}::\${$attribute}List, ['style' => 'margin-top:7px;'])->label('是否启用') ?>\n\n";
+        } else {
+            echo "    <?= " . $generator->generateActiveField($attribute) . " ?>\n\n";
+        }
     }
 } ?>
     <div class="col-md-2">

@@ -8,6 +8,16 @@ use yii\helpers\StringHelper;
 
 $urlParams = $generator->generateUrlParams();
 $nameAttribute = $generator->getNameAttribute();
+$enableField = '';
+
+foreach ($generator->getTableSchema()->columns as $column) {
+    if (strpos($column->name, 'enable') !== false) {
+        $enableField = $column->name;
+        break;
+    }
+}
+$modelNames = explode('\\', $generator->modelClass);
+$modelName = $modelNames[count($modelNames) - 1];
 
 echo "<?php\n";
 ?>
@@ -15,6 +25,7 @@ echo "<?php\n";
 use yii\helpers\Html;
 use <?= $generator->indexWidgetType === 'grid' ? "yii\\grid\\GridView" : "yii\\widgets\\ListView" ?>;
 <?= $generator->enablePjax ? 'use yii\widgets\Pjax;' : '' ?>
+<?php if ($enableField != '') { echo 'use ' . $generator->modelClass . ';' . PHP_EOL; echo 'use kartik\switchinput\SwitchInput;' . PHP_EOL; } ?>
 
 /* @var $this yii\web\View */
 <?= !empty($generator->searchModelClass) ? "/* @var \$searchModel " . ltrim($generator->searchModelClass, '\\') . " */\n" : '' ?>
@@ -23,6 +34,33 @@ use <?= $generator->indexWidgetType === 'grid' ? "yii\\grid\\GridView" : "yii\\w
 $this->title = <?= "'" . \app\models\Util::getTableComment($generator->tableSchema->name) . "管理'" ?>;
 $this->params['breadcrumbs'][] = $this->title;
 ?>
+<?php if ($enableField != '') {?>
+<script>
+    function submitAjax(event, state) {
+        var splitStr = event.target.name.split('_');
+        $.ajax({
+            type:'POST',
+            url: '/<?php echo  $generator->getControllerID(); ?>/update-' + splitStr[0],
+            data: {
+                'id': splitStr[1],
+                'value': state ? 1 : 0
+            },
+            datatype: 'json',
+            success:function(data){
+                if (data.code == 0) {
+                    $.notify({message: data.msg},{type: 'success',delay:1000,allow_dismiss: false,});
+                } else {
+                    $.notify({message: data.msg},{type: 'danger',delay:1000,allow_dismiss: false,});
+                    location.reload();
+                }
+            },
+            error: function(){
+                $.notify({message: '修改失败'},{type: 'danger',delay:1000,allow_dismiss: false,});
+            }
+        });
+    }
+</script>
+<?php } ?>
 <p>
     <?= "<?= " ?>Html::a(<?= '\'创建' . \app\models\Util::getTableComment($generator->tableSchema->name) . '\'' ?>, ['create'], ['class' => 'btn btn-success']) ?>
 </p>
@@ -44,15 +82,42 @@ $this->params['breadcrumbs'][] = $this->title;
 <?php
 if (($tableSchema = $generator->getTableSchema()) === false) {
     foreach ($generator->getColumnNames() as $name) {
-            echo str_pad(' ', 4 * 8) . "'" . $name . "',\n";
+        echo str_pad(' ', 4 * 8) . "'" . $name . "',\n";
     }
 } else {
     foreach ($tableSchema->columns as $column) {
         $format = $generator->generateColumnFormat($column);
-            echo str_pad(' ', 4 * 8) . "'" . $column->name . ($format === 'text' ? "" : ":" . $format) . "',\n";
+        if (strpos($column->name, 'enable') !== false) {
+            continue;
+        }
+        echo str_pad(' ', 4 * 8) . "'" . $column->name . ($format === 'text' ? "" : ":" . $format) . "',\n";
     }
 }
 ?>
+<?php if ($enableField != '') { ?>
+                                [
+                                    'label' => '启用',
+                                    'format' => 'raw',
+                                    'value' => function($model) {
+                                        return SwitchInput::widget([
+                                            'id' => 'enable_' . $model->id,
+                                            'name' => 'enable_' . $model->id,
+                                            'value' => $model-><?= $enableField ?> == <?= $modelName ?>::ENABLE_YES ? true : false,
+                                            'pluginOptions'=>[
+                                                'size' => 'mini',
+                                                //'handleWidth' => 30,
+                                                'onText' => '启用',
+                                                'offText' => '关闭',
+                                                'onColor' => 'success',
+                                                'offColor' => 'danger',
+                                            ],
+                                            'pluginEvents' => [
+                                                "switchChange.bootstrapSwitch" => "function(event, state) {submitAjax(event, state);}"
+                                            ],
+                                        ]);
+                                    }
+                                ],
+<?php } ?>
                                 [
                                     'class' => 'yii\grid\ActionColumn',
                                     'header' => '操作',
