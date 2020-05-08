@@ -6,6 +6,7 @@
 /* @var $this yii\web\View */
 /* @var $generator yii\gii\generators\model\Generator */
 /* @var $className string class name */
+/* @var $tableSchema yii\db\TableSchema */
 
 echo "<?php\n";
 ?>
@@ -18,13 +19,12 @@ class <?= $className ?> extends <?= '\common\models\\' . $className . PHP_EOL ?>
     const STATUS_INVALID = 2;
 
 <?php
-$safeAttributes = $generator->safeAttributes();
-if (empty($safeAttributes)) {
-    $safeAttributes = $generator->attributes();
-}
 $enableFlag = false;
-if (strpos(implode('|', $safeAttributes), 'enable') !== false) {
-    $enableFlag = true;
+foreach ($tableSchema->columns as $column) {
+    if (strpos($column->name, 'enable') !== false) {
+        $enableFlag = true;
+        break;
+    }
 }
 if ($enableFlag) {?>
     const ENABLE_YES = 1;

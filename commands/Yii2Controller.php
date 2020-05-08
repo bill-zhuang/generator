@@ -64,12 +64,12 @@ class Yii2Controller extends Controller
             if (self::$templateFolderName == 'yii2-v1') {
                 //backend
                 $test->ns = 'backend\models';
-                $params = ['generator' => $test, 'className' => $modelName];
+                $params = ['generator' => $test, 'className' => $modelName, 'tableSchema' => $tableSchema,];
                 $codeContent = Render::phpFile(Yii::$app->basePath . '/templates/' . self::$templateFolderName . '/model/bkapimodel.php', $params);
                 file_put_contents(Util::getProjectPath(self::$projectName) . "/backend/models/$modelName.php", $codeContent);
                 //api
                 $test->ns = 'api\models';
-                $params = ['generator' => $test, 'className' => $modelName];
+                $params = ['generator' => $test, 'className' => $modelName, 'tableSchema' => $tableSchema,];
                 $codeContent = Render::phpFile(Yii::$app->basePath . '/templates/' . self::$templateFolderName . '/model/bkapimodel.php', $params);
                 file_put_contents(Util::getProjectPath(self::$projectName) . "/api/models/$modelName.php", $codeContent);
             }
