@@ -78,9 +78,10 @@ class Util
 
     /**
      * Created by bill
-     * @param $tableName string
-     * @return string
-     * */
+     * @param $tableName
+     * @return string|string[]|null
+     * @throws \yii\db\Exception
+     */
     public static function getTableComment($tableName)
     {
         $createTableSql = self::getDB()->createCommand('show create table ' . $tableName)->queryAll()[0]['Create Table'];
@@ -95,10 +96,11 @@ class Util
 
     /**
      * Created by bill
-     * @param $tableName string
-     * @param $attribute string
+     * @param $tableName
+     * @param $attribute
      * @return string
-     * */
+     * @throws \yii\db\Exception
+     */
     public static function getFieldComment($tableName, $attribute)
     {
         $createTableSql = self::getDB()->createCommand('show create table ' . $tableName)->queryAll()[0]['Create Table'];
