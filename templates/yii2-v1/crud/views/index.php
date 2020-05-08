@@ -8,12 +8,21 @@ use yii\helpers\StringHelper;
 
 $urlParams = $generator->generateUrlParams();
 $nameAttribute = $generator->getNameAttribute();
-$enableField = '';
 
+$enableField = '';
+$imgFiled = '';
 foreach ($generator->getTableSchema()->columns as $column) {
-    if (strpos($column->name, 'enable') !== false) {
+    if (($enableField == '') && strpos($column->name, 'enable') !== false) {
         $enableField = $column->name;
-        break;
+    }
+    if (($imgFiled == '') && (
+            (strpos($column->name, 'img') !== false)
+            || (strpos($column->name, 'image') !== false)
+            || (strpos($column->name, 'pic') !== false)
+            || (strpos($column->name, 'picture') !== false)
+        )
+    ) {
+        $imgFiled = $column->name;
     }
 }
 $modelNames = explode('\\', $generator->modelClass);
@@ -87,13 +96,22 @@ if (($tableSchema = $generator->getTableSchema()) === false) {
 } else {
     foreach ($tableSchema->columns as $column) {
         $format = $generator->generateColumnFormat($column);
-        if (strpos($column->name, 'enable') !== false) {
+        if (in_array($column->name, [$enableField, $imgFiled])) {
             continue;
         }
         echo str_pad(' ', 4 * 8) . "'" . $column->name . ($format === 'text' ? "" : ":" . $format) . "',\n";
     }
 }
 ?>
+<?php if ($imgFiled != '') { ?>
+                                [
+                                    'label' => '图片',
+                                    'format' => 'raw',
+                                    'value'=> function($model) {
+                                        return Html::img($model-><?= $imgFiled ?>, ['width' => '100px']);
+                                    },
+                                ],
+<?php } ?>
 <?php if ($enableField != '') { ?>
                                 [
                                     'label' => '启用',

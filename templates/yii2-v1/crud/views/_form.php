@@ -16,6 +16,22 @@ $useModel = false;
 if (strpos(implode('|', $safeAttributes), 'enable') !== false) {
     $useModel = true;
 }
+$enableField = '';
+$imgFiled = '';
+foreach ($generator->getTableSchema()->columns as $column) {
+    if (($enableField == '') && strpos($column->name, 'enable') !== false) {
+        $enableField = $column->name;
+    }
+    if (($imgFiled == '') && (
+            (strpos($column->name, 'img') !== false)
+            || (strpos($column->name, 'image') !== false)
+            || (strpos($column->name, 'pic') !== false)
+            || (strpos($column->name, 'picture') !== false)
+        )
+    ) {
+        $imgFiled = $column->name;
+    }
+}
 $modelNames = explode('\\', $generator->modelClass);
 $modelName = $modelNames[count($modelNames) - 1];
 
@@ -24,7 +40,8 @@ echo "<?php\n";
 
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
-<?php if ($useModel) { echo 'use ' . $generator->modelClass . ';' . PHP_EOL; } ?>
+<?php if ($enableField != '') { echo 'use ' . $generator->modelClass . ';' . PHP_EOL; } ?>
+<?php if ($imgFiled != '') { echo 'use kartik\file\FileInput;' . PHP_EOL; } ?>
 
 /* @var $this yii\web\View */
 /* @var $model <?= ltrim($generator->modelClass, '\\') ?> */
@@ -50,9 +67,32 @@ use yii\widgets\ActiveForm;
         $ignoreFields = ['create_at', 'created_at', 'create_time', 'update_at', 'updated_at', 'update_time', 'status'];
         if (strpos(implode('|', $ignoreFields), $attribute) !== false) {
             continue;
-        } elseif (strpos($attribute, 'enable') !== false) {
+        } elseif ($enableField == $attribute) {
             echo "    <?= \$form->field(\$model, '{$attribute}')->radioList({$modelName}::\${$attribute}List, ['style' => 'margin-top:7px;'])->label('是否启用') ?>\n\n";
-        } else {
+        } elseif ($imgFiled == $attribute) { ?>
+    <div class="form-group field-<?= $generator->controllerID; ?>-<?= $imgFiled; ?>">
+        <label class="col-sm-2 control-label" for="reward-imgurl">图片</label>
+        <div class="col-sm-4" style="width:550px;">
+            <?= '<?=' . PHP_EOL ?>
+            FileInput::widget([
+                'name' => '<?= $modelName ?>[<?= $imgFiled; ?>]',
+                'options' => [
+                    'accept' => 'image/*',
+                    'multiple' => false
+                ],
+                'pluginOptions' => [
+                    'initialPreview'=>[
+                        $model-><?= $imgFiled . PHP_EOL; ?>
+                    ],
+                    'initialPreviewAsData'=>true,
+                    'showUpload' => false,
+                    'showRemove' => true,
+                ]
+            ]);
+            <?= '?>' . PHP_EOL ?>
+        </div>
+    </div>
+        <?php } else {
             echo "    <?= " . $generator->generateActiveField($attribute) . " ?>\n\n";
         }
     }

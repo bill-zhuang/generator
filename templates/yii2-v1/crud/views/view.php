@@ -7,12 +7,30 @@ use yii\helpers\StringHelper;
 /* @var $generator yii\gii\generators\crud\Generator */
 
 $urlParams = $generator->generateUrlParams();
-
+$enableField = '';
+$imgFiled = '';
+foreach ($generator->getTableSchema()->columns as $column) {
+    if (($enableField == '') && strpos($column->name, 'enable') !== false) {
+        $enableField = $column->name;
+    }
+    if (($imgFiled == '') && (
+            (strpos($column->name, 'img') !== false)
+            || (strpos($column->name, 'image') !== false)
+            || (strpos($column->name, 'pic') !== false)
+            || (strpos($column->name, 'picture') !== false)
+        )
+    ) {
+        $imgFiled = $column->name;
+    }
+}
+$modelNames = explode('\\', $generator->modelClass);
+$modelName = $modelNames[count($modelNames) - 1];
 echo "<?php\n";
 ?>
 
 use yii\helpers\Html;
 use yii\widgets\DetailView;
+<?php if ($enableField != '') { echo 'use ' . $generator->modelClass . ';' . PHP_EOL; } ?>
 
 /* @var $this yii\web\View */
 /* @var $model <?= ltrim($generator->modelClass, '\\') ?> */
@@ -48,8 +66,25 @@ $this->params['breadcrumbs'][] = $this->title;
                     }
                 } else {
                     foreach ($generator->getTableSchema()->columns as $column) {
-                        $format = $generator->generateColumnFormat($column);
-                        echo "                            '" . $column->name . ($format === 'text' ? "" : ":" . $format) . "',\n";
+                        if ($imgFiled == $column->name) { ?>
+                            [
+                                'label' => '图片',
+                                'format' => 'raw',
+                                'value'=> function($model) {
+                                    return Html::img($model-><?= $imgFiled ?>, ['width' => '100px']);
+                                },
+                            ],
+                        <?php } elseif ($enableField == $column->name) { ?>
+                            [
+                                'label' => '启用状态',
+                                'value'=> function($model) {
+                                    return $model-><?= $enableField ?> == <?= $modelName ?>::ENABLE_YES ? '启用' : '未启用';
+                                },
+                            ],
+                        <?php } else {
+                            $format = $generator->generateColumnFormat($column);
+                            echo str_repeat(' ', 4 * 7) . "'" . $column->name . ($format === 'text' ? "" : ":" . $format) . "',\n";
+                        }
                     }
                 }
                 ?>

@@ -23,12 +23,21 @@ $pks = $class::primaryKey();
 $urlParams = $generator->generateUrlParams();
 $actionParams = $generator->generateActionParams();
 $actionParamComments = $generator->generateActionParamComments();
-$enableField = '';
 
+$enableField = '';
+$imgFiled = '';
 foreach ($generator->getTableSchema()->columns as $column) {
-    if (strpos($column->name, 'enable') !== false) {
+    if (($enableField == '') && (strpos($column->name, 'enable') !== false)) {
         $enableField = $column->name;
-        break;
+    }
+    if (($imgFiled == '') && (
+            (strpos($column->name, 'img') !== false)
+            || (strpos($column->name, 'image') !== false)
+            || (strpos($column->name, 'pic') !== false)
+            || (strpos($column->name, 'picture') !== false)
+        )
+    ) {
+        $imgFiled = $column->name;
     }
 }
 
@@ -47,6 +56,7 @@ use yii\data\ActiveDataProvider;
 use <?= ltrim($generator->baseControllerClass, '\\') ?>;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+<?php if ($imgFiled != '') { echo 'use yii\web\UploadedFile;'; } ?>
 
 /**
  * <?= $controllerClass ?> implements the CRUD actions for <?= $modelClass ?> model.
@@ -119,6 +129,13 @@ class <?= $controllerClass ?> extends <?= StringHelper::basename($generator->bas
         $model = new <?= $modelClass ?>();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+<?php if ($imgFiled != '') { ?>
+            $imgUrl = $this->uploadFile();
+            if (!empty($imgUrl)) {
+                $model-><?= $imgFiled ?> = $imgUrl;
+                $model->save();
+            }
+<?php } ?>
             $this->saveDuplicateAction($model->id);
         } else {
             return $this->render('create', [
@@ -139,6 +156,13 @@ class <?= $controllerClass ?> extends <?= StringHelper::basename($generator->bas
         $model = $this->findModel(<?= $actionParams ?>);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+<?php if ($imgFiled != '') { ?>
+            $imgUrl = $this->uploadFile();
+            if (!empty($imgUrl)) {
+                $model-><?= $imgFiled ?> = $imgUrl;
+                $model->save();
+            }
+<?php } ?>
             $this->saveDuplicateAction($model->id);
         } else {
             return $this->render('update', [
@@ -236,4 +260,20 @@ if (count($pks) === 1) {
             return $this->redirect(['view', 'id' => $id]);
         }
     }
+<?php if ($imgFiled != '') { echo PHP_EOL; ?>
+    protected function uploadFile()
+    {
+        $ret = '';
+        $imgObj = UploadedFile::getInstanceByName("<?= $modelClass ?>[<?= $imgFiled ?>]");
+        if(empty($imgObj)) {
+            return $ret;
+        }
+
+        $ossUpload = new UploadOss();
+        $ossUpload->fileobj = $imgObj;
+        $ret = $ossUpload->uploadOss();
+
+        return $ret;
+    }
+<?php } ?>
 }
