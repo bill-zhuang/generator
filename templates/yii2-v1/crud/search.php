@@ -63,7 +63,13 @@ class <?= $searchModelClass ?> extends <?= isset($modelAlias) ? $modelAlias : $m
      */
     public function search($params)
     {
-        $query = <?= isset($modelAlias) ? $modelAlias : $modelClass ?>::find();
+        $query = <?= isset($modelAlias) ? $modelAlias : $modelClass ?>::find()
+            ->andWhere([
+                'status' => self::VALID_STATUS,
+            ])
+            ->orderBy([
+                'id' => SORT_DESC,
+            ]);
 
         // add conditions that should always apply here
 
