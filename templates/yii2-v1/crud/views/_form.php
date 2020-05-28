@@ -52,7 +52,10 @@ use yii\widgets\ActiveForm;
 
     <?= "<?php " ?>$form = ActiveForm::begin([
         'options' => [
-            'class' => 'form-horizontal'
+            'class' => 'form-horizontal',
+<?php if ($imgFiled !== '') { ?>
+            'enctype' => 'multipart/form-data', //图片上传设置 重要
+<?php } ?>
         ],
         'fieldConfig' => [
             'template' => "{label}\n<div class=\"col-sm-4\">{input}</div><div class=\"help-block\">{error}</div>",

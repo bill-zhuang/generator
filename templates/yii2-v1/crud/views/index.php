@@ -80,7 +80,14 @@ $this->params['breadcrumbs'][] = $this->title;
     <div class="row bg-light m-b">
         <div class="col-md-12">
             <section class="panel panel-default">
-                <header class="panel-heading font-bold"><?php echo \app\models\Util::getTableComment($generator->tableSchema->name); ?>列表</header>
+                <header class="panel-heading font-bold">
+                    <div class="pull-right">
+                        <div class="summary">
+                            共<b><?= '<?= $dataProvider->totalCount ?>' ?></b>条数据.
+                        </div>
+                    </div>
+                    <?php echo \app\models\Util::getTableComment($generator->tableSchema->name); ?>列表
+                </header>
                 <div class="panel-body">
                     <div class="<?= Inflector::camel2id(StringHelper::basename($generator->modelClass)) ?>-index">
 <?= $generator->enablePjax ? '<?php Pjax::begin(); ?>' : '' ?>
