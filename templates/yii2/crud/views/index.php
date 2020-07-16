@@ -25,6 +25,12 @@ use common\consts\Consts;
 
 $this->title = <?= "'" . \app\models\Util::getTableComment($generator->tableSchema->name) . "管理'" ?>;
 $this->params['breadcrumbs'][] = $this->title;
+
+$pre = $dataProvider->pagination->getPageCount();
+$count = $dataProvider->getCount();
+$totalCount = $dataProvider->getTotalCount();
+$begin = $dataProvider->pagination->getPage() * $dataProvider->pagination->pageSize + 1;
+$end = $begin + $count - 1;
 ?>
 <p>
     <?= "<?= " ?>Html::a(<?= '\'创建' . \app\models\Util::getTableComment($generator->tableSchema->name) . '\'' ?>, ['create'], ['class' => 'btn btn-success']) ?>
@@ -36,7 +42,14 @@ $this->params['breadcrumbs'][] = $this->title;
     <div class="row bg-light m-b">
         <div class="col-md-12">
             <section class="panel panel-default">
-                <header class="panel-heading font-bold"><?php echo \app\models\Util::getTableComment($generator->tableSchema->name); ?>列表</header>
+                <header class="panel-heading font-bold">
+                    <?php echo \app\models\Util::getTableComment($generator->tableSchema->name); ?>列表
+                    <div class="pull-right">
+                        <div class="summary">
+                            第<b><?= '<?= $begin' . '-' . '<?= $end ?>' ?></b>条, 共<b><?= '<?= $dataProvider->totalCount ?>' ?></b>条数据.
+                        </div>
+                    </div>
+                </header>
                 <div class="panel-body">
                     <div class="<?= Inflector::camel2id(StringHelper::basename($generator->modelClass)) ?>-index">
 <?= $generator->enablePjax ? '<?php Pjax::begin(); ?>' : '' ?>
