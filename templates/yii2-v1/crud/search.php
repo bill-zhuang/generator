@@ -65,7 +65,7 @@ class <?= $searchModelClass ?> extends <?= isset($modelAlias) ? $modelAlias : $m
     {
         $query = <?= isset($modelAlias) ? $modelAlias : $modelClass ?>::find()
             ->andWhere([
-                'status' => self::VALID_STATUS,
+                'status' => self::STATUS_VALID,
             ])
             ->orderBy([
                 'id' => SORT_DESC,

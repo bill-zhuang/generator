@@ -85,13 +85,15 @@ class <?= $controllerClass ?> extends <?= StringHelper::basename($generator->bas
     public function actionIndex()
     {
 <?php if (!empty($generator->searchModelClass)): ?>
+        $params = Yii::$app->request->queryParams;
         $searchModel = new <?= isset($searchModelAlias) ? $searchModelAlias : $searchModelClass ?>();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        $dataProvider = $searchModel->search($params);
         $dataProvider->sort = false;
 
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'params' => $params,
         ]);
 <?php else: ?>
         $dataProvider = new ActiveDataProvider([

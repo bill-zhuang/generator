@@ -90,7 +90,7 @@ $end = $begin + $count - 1;
                     <?php echo \app\models\Util::getTableComment($generator->tableSchema->name); ?>列表
                     <div class="pull-right">
                         <div class="summary">
-                            第<b><?= '<?= $begin' . '-' . '<?= $end ?>' ?></b>条, 共<b><?= '<?= $dataProvider->totalCount ?>' ?></b>条数据.
+                            第<b><?= '<?= $begin . ' . '\'-\'' . ' . $end ?>' ?></b>条, 共<b><?= '<?= $dataProvider->totalCount ?>' ?></b>条数据.
                         </div>
                     </div>
                 </header>

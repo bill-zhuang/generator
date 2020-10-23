@@ -14,20 +14,27 @@ use Yii;
 class Yii2Controller extends Controller
 {
     public static $tables = [
+         '',
     ];
     public static $namespace = 'common\models';
     public static $crudModuleName = ''; //放在某个module名下
     public static $generateSearchModel = true; //是否生成SearchModel，默认为false
-    public static $templateFolderName = 'yii2-v1';
+    public static $templateFolderName = 'yii2-kartik';
     public static $projectName = '';
 
     public function actionM()
     {
         $test = (new ModelGenerator());
         foreach (self::$tables as $tableName) {
-            $modelName = implode('', array_map('ucfirst', explode('_', $tableName)));
+            $processName = $tableName;
+            $setTablePrefix = Yii::$app->db->tablePrefix;
+            if ($setTablePrefix != '') {
+                $processName = preg_replace("/^{$setTablePrefix}/", '', $processName);
+            }
+            $modelName = implode('', array_map('ucfirst', explode('_', $processName)));
             $test->tableName = $tableName;
             $test->ns = self::$namespace;
+
 
             $relations = Util::callProtectMethod('\yii\gii\generators\model\Generator', 'generateRelations');
             $db = Util::getDB();
@@ -60,8 +67,8 @@ class Yii2Controller extends Controller
                 'thirdParty' => false,
             ];
             $codeContent = Render::phpFile(Yii::$app->basePath . '/templates/' . self::$templateFolderName . '/model/model.php', $params);
-            file_put_contents(Util::getProjectPath(self::$projectName) . "/common/models/$modelName.php", $codeContent);
-            if (self::$templateFolderName == 'yii2-v1') {
+            //file_put_contents(Util::getProjectPath(self::$projectName) . "/common/models/$modelName.php", $codeContent);
+            if (self::$templateFolderName == 'yii2-v1' || self::$templateFolderName == 'yii2-kartik') {
                 //backend
                 $test->ns = 'backend\models';
                 $params = ['generator' => $test, 'className' => $modelName, 'tableSchema' => $tableSchema,];
@@ -110,9 +117,14 @@ class Yii2Controller extends Controller
             }
         }
         foreach (self::$tables as $tableName) {
-            $name = implode('', array_map('ucfirst', explode('_', $tableName)));
+            $processName = $tableName;
+            $setTablePrefix = Yii::$app->db->tablePrefix;
+            if ($setTablePrefix != '') {
+                $processName = preg_replace("/^{$setTablePrefix}/", '', $processName);
+            }
+            $name = implode('', array_map('ucfirst', explode('_', $processName)));
             //生成view下面的文件夹
-            $viewName = str_replace('_', '-', $tableName);
+            $viewName = str_replace('_', '-', $processName);
             Util::createDir($backendModulePath . '/views/' . $viewName);
             //
             $test = (new CrudGenerator());
@@ -120,7 +132,7 @@ class Yii2Controller extends Controller
                 'default' => realpath(__DIR__) . '/../templates/' . self::$templateFolderName . '/crud',
             ];
             //model路径 eg. \common\models\User
-            if (self::$templateFolderName == 'yii2-v1') {
+            if (self::$templateFolderName == 'yii2-v1' || self::$templateFolderName == 'yii2-kartik') {
                 //继承类需要也include
                 $modelClassPath = Util::getProjectPath(self::$projectName) . '/' . str_replace('\\', '/', self::$namespace) . '/' . $name . '.php';
                 include($modelClassPath);
@@ -131,7 +143,7 @@ class Yii2Controller extends Controller
             $test->modelClass = self::$namespace . '\\' . $name;
             if (self::$generateSearchModel) {
                 $test->searchModelClass = '\common\models\Search\\' . $name . 'Search';
-                if (self::$templateFolderName == 'yii2-v1') {
+                if (self::$templateFolderName == 'yii2-v1' || self::$templateFolderName == 'yii2-kartik') {
                     $test->searchModelClass = '\backend\models\Search\\' . $name . 'Search';
                 }
                 //generate model search file
@@ -139,7 +151,7 @@ class Yii2Controller extends Controller
                     'generator' => $test,
                 ];
                 $codeContent = Render::phpFile(Yii::$app->basePath . '/templates/' . self::$templateFolderName . '/crud/search.php', $searchParams);
-                if (self::$templateFolderName == 'yii2-v1') {
+                if (self::$templateFolderName == 'yii2-v1' || self::$templateFolderName == 'yii2-kartik') {
                     file_put_contents(Util::getProjectPath(self::$projectName) . "/backend/models/Search/{$name}Search.php", $codeContent);
                 } else {
                     file_put_contents(Util::getProjectPath(self::$projectName) . "/common/models/Search/{$name}Search.php", $codeContent);
