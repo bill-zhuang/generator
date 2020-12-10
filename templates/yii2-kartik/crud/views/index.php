@@ -161,7 +161,7 @@ if (($tableSchema = $generator->getTableSchema()) === false) {
             'template' => '{update} {delete}',
             'buttons' => [
                 'update' => function($url, $model){
-                    return Html::a('编辑', ['update', 'id' => $model->BOOK_SETTING_ID]);
+                    return Html::a('编辑', ['update', 'id' => $model->id]);
                 },
                 'delete' => function($url, $model){
                     return Html::a('删除', ['delete', 'id' => $model->id], [

@@ -34,6 +34,8 @@ class Yii2Controller extends Controller
             $modelName = implode('', array_map('ucfirst', explode('_', $processName)));
             $test->tableName = $tableName;
             $test->ns = self::$namespace;
+            $test->generateLabelsFromComments = true;
+            $test->useTablePrefix = true;
 
 
             $relations = Util::callProtectMethod('\yii\gii\generators\model\Generator', 'generateRelations');

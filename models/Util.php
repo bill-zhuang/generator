@@ -113,7 +113,7 @@ class Util
         }
     }
 
-    public static function curlGet($url, $params = [])
+    public static function curlGet($url, $params = [], $headers = [])
     {
         $query = http_build_query($params);
         if (!empty($query)) {
@@ -126,6 +126,9 @@ class Util
             CURLOPT_FOLLOWLOCATION => 1,
             CURLOPT_SSL_VERIFYPEER => false,
         ];
+        if (!empty($headers)) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        }
 
         //curl的额外参数
         curl_setopt_array($ch, $options);
