@@ -154,8 +154,8 @@ class Yii2Controller extends Controller
             include_once($extendModelPath);
             $test->modelClass = self::$crudNamespace . '\\' . $name;
             if (self::$generateSearchModel) {
-                // $test->searchModelClass = '\common\models\search\\' . $name . 'Search';
-                $test->searchModelClass = '\\'. self::$crudFolderName . '\models\search\\' . $name . 'Search';
+                // $test->searchModelClass = '\common\models\Search\\' . $name . 'Search';
+                $test->searchModelClass = '\\'. self::$crudFolderName . '\models\Search\\' . $name . 'Search';
                 //generate model search file
                 $searchParams = [
                     'generator' => $test,
@@ -163,7 +163,7 @@ class Yii2Controller extends Controller
                 $templateSearchModelPath = Yii::$app->basePath . '/templates/' . self::$templateFolderName . '/crud/search.php';
                 $codeContent = Render::phpFile($templateSearchModelPath, $searchParams);
                 //file_put_contents(Util::getProjectPath(self::$projectName) . "/common/models/Search/{$name}Search.php", $codeContent);
-                $searchModelPath = Util::getProjectPath(self::$projectName) . '/' . self::$crudFolderName . "/models/search/{$name}Search.php";
+                $searchModelPath = Util::getProjectPath(self::$projectName) . '/' . self::$crudFolderName . "/models/Search/{$name}Search.php";
                 file_put_contents($searchModelPath, $codeContent);
             }
             $test->controllerClass = self::$crudFolderName . '\modules\\' . self::$crudModuleName . '\controllers\\' . $name . 'Controller';
