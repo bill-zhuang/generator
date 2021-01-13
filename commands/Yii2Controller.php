@@ -84,7 +84,11 @@ class Yii2Controller extends Controller
             $templateBaseModelPath = Yii::$app->basePath . '/templates/' . self::$templateFolderName . '/model/model.php';
             $codeContent = Render::phpFile($templateBaseModelPath, $params);
             if (self::$generateBaseModel) {
-                $baseModelPath = Util::getProjectPath(self::$projectName) . self::$baseModelFolderPath . "$modelName.php";
+                $baseModelDirPath = Util::getProjectPath(self::$projectName) . self::$baseModelFolderPath;
+                if (!file_exists($baseModelDirPath)) {
+                    Util::createDir($baseModelDirPath);
+                }
+                $baseModelPath = $baseModelDirPath . "$modelName.php";
                 file_put_contents($baseModelPath, $codeContent);
             }
             foreach (self::$extendModelList as $extendNs => $extendModelFolderPath) {
@@ -163,7 +167,11 @@ class Yii2Controller extends Controller
                 $templateSearchModelPath = Yii::$app->basePath . '/templates/' . self::$templateFolderName . '/crud/search.php';
                 $codeContent = Render::phpFile($templateSearchModelPath, $searchParams);
                 //file_put_contents(Util::getProjectPath(self::$projectName) . "/common/models/Search/{$name}Search.php", $codeContent);
-                $searchModelPath = Util::getProjectPath(self::$projectName) . '/' . self::$crudFolderName . "/models/Search/{$name}Search.php";
+                $searchModelDirPath = Util::getProjectPath(self::$projectName) . '/' . self::$crudFolderName . "/models/Search/";
+                if (!file_exists($searchModelDirPath)) {
+                    Util::createDir($searchModelDirPath);
+                }
+                $searchModelPath = $searchModelDirPath . "{$name}Search.php";
                 file_put_contents($searchModelPath, $codeContent);
             }
             $test->controllerClass = self::$crudFolderName . '\modules\\' . self::$crudModuleName . '\controllers\\' . $name . 'Controller';

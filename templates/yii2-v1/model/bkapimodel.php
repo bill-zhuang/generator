@@ -9,11 +9,12 @@
 /* @var $tableSchema yii\db\TableSchema */
 
 echo "<?php\n";
+$extendClassName = '\\'.  \app\commands\Yii2Controller::$baseNamespace . '\\' . $className;
 ?>
 
 namespace <?= $generator->ns ?>;
 
-class <?= $className ?> extends <?= '\common\models\\' . $className . PHP_EOL ?>
+class <?= $className ?> extends <?= $extendClassName . PHP_EOL ?>
 {
     const STATUS_VALID = 1;
     const STATUS_INVALID = 2;

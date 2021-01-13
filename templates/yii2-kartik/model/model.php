@@ -13,20 +13,18 @@
 /* @var $rules string[] list of validation rules */
 /* @var $relations array list of relations (name => relation declaration) */
 /* @var $fieldComments array table field comments */
-
 echo "<?php\n";
 ?>
 
 namespace <?= $generator->ns ?>;
 
 use Yii;
-use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "<?= $generator->generateTableName($tableName) ?>".
  *
 <?php foreach ($tableSchema->columns as $column): ?>
- * @property <?= "{$column->phpType} \${$column->name}\n" ?>
+ * @property <?= "{$column->phpType} \${$column->name} {$column->comment}\n" ?>
 <?php endforeach; ?>
 <?php if (!empty($relations)): ?>
  *
@@ -38,7 +36,7 @@ use yii\behaviors\TimestampBehavior;
 class <?= $className ?> extends <?= '\\' . ltrim($generator->baseClass, '\\') . "\n" ?>
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function tableName()
     {
@@ -56,7 +54,7 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->baseClass, '\\') . 
 <?php endif; ?>
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function rules()
     {
@@ -64,7 +62,7 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->baseClass, '\\') . 
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function attributeLabels()
     {
@@ -74,25 +72,6 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->baseClass, '\\') . 
 <?php endforeach; ?>
         ];
     }
-<?php $list = implode(',', array_keys($labels)); if (strpos($list, 'create') !== false || strpos($list, 'update') !== false) { ?>
-    public function behaviors()
-    {
-        return [
-            [
-                'class' => TimestampBehavior::className(),
-<?php foreach ($labels as $name => $label){if (strpos($name, 'create') !== false){ ?>
-                'createdAtAttribute' => '<?php echo $name; ?>',
-<?php }} ?>
-<?php foreach ($labels as $name => $label){if (strpos($name, 'update') !== false){ ?>
-                'updatedAtAttribute' => '<?php echo $name; ?>',
-<?php }} ?>
-                'value' => function ($event) {
-                    return date('Y-m-d H:i:s');
-                },
-            ],
-        ];
-    }
-<?php } ?>
 <?php foreach ($relations as $name => $relation): ?>
 
     /**
@@ -109,7 +88,7 @@ class <?= $className ?> extends <?= '\\' . ltrim($generator->baseClass, '\\') . 
     echo "\n";
 ?>
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      * @return <?= $queryClassFullName ?> the active query used by this AR class.
      */
     public static function find()
