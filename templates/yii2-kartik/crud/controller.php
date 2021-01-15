@@ -54,6 +54,7 @@ use <?= ltrim($generator->searchModelClass, '\\') . (isset($searchModelAlias) ? 
 use yii\data\ActiveDataProvider;
 <?php endif; ?>
 use <?= ltrim($generator->baseControllerClass, '\\') ?>;
+use yii\helpers\Url;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 <?php if ($imgFiled != '') { echo 'use yii\web\UploadedFile;'; } ?>
@@ -84,6 +85,7 @@ class <?= $controllerClass ?> extends <?= StringHelper::basename($generator->bas
      */
     public function actionIndex()
     {
+        Url::remember();
 <?php if (!empty($generator->searchModelClass)): ?>
         $params = Yii::$app->request->queryParams;
         $searchModel = new <?= isset($searchModelAlias) ? $searchModelAlias : $searchModelClass ?>();
@@ -124,7 +126,6 @@ class <?= $controllerClass ?> extends <?= StringHelper::basename($generator->bas
      * Creates a new <?= $modelClass ?> model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
-     * @throws NotFoundHttpException if the model cannot be found
      */
     public function actionCreate()
     {
@@ -251,6 +252,7 @@ if (count($pks) === 1) {
 
     protected function saveDuplicateAction($id)
     {
+        return $this->goBack();
         $ckOption = Yii::$app->request->post('ckOption');
         if ($ckOption == 'view') {
             return $this->redirect(['view', 'id' => $id]);
