@@ -9,17 +9,6 @@ use yii\db\Connection;
 
 class ZhihuController extends Controller
 {
-    //CREATE TABLE `zhihu_hot_collection` (
-    //  `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT 'id',
-    //  `title` varchar(256) NOT NULL DEFAULT '' COMMENT '标题',
-    //  `abbr_answer` varchar(1024) NOT NULL DEFAULT '' COMMENT 'abbr answer',
-    //  `answer_url` varchar(128) NOT NULL DEFAULT '' COMMENT '回答url',
-    //  `status` tinyint(2) unsigned NOT NULL DEFAULT '1' COMMENT '1-有效；2-无效',
-    //  `create_time` datetime DEFAULT NULL,
-    //  `update_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    //  PRIMARY KEY (`id`) USING BTREE,
-    //  KEY `idx_answer_url` (`answer_url`)
-    //) ENGINE=InnoDB AUTO_INCREMENT=815 DEFAULT CHARSET=utf8 COMMENT='知乎热门收藏表';
     public function actionDo()
     {
         $localDb = \Yii::$app->local_db;
