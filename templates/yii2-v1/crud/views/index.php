@@ -101,6 +101,12 @@ $end = $begin + $count - 1;
                         <?= "<?= " ?>GridView::widget([
                             'dataProvider' => $dataProvider,
                             <?= !empty($generator->searchModelClass) ? "'columns' => [\n" : "'columns' => [\n"; ?>
+                                [
+                                    'label' => '序号',
+                                    'value' => function ($model, $key, $index) use ($begin) {
+                                        return $begin + $index;
+                                    }
+                                ],
 <?php
 if (($tableSchema = $generator->getTableSchema()) === false) {
     foreach ($generator->getColumnNames() as $name) {

@@ -131,20 +131,22 @@ class <?= $controllerClass ?> extends <?= StringHelper::basename($generator->bas
     {
         $model = new <?= $modelClass ?>();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->save()) {
 <?php if ($imgFiled != '') { ?>
-            $imgUrl = $this->uploadFile();
-            if (!empty($imgUrl)) {
-                $model-><?= $imgFiled ?> = $imgUrl;
-                $model->save();
-            }
+                $imgUrl = $this->uploadFile();
+                if (!empty($imgUrl)) {
+                    $model-><?= $imgFiled ?> = $imgUrl;
+                    $model->save();
+                }
 <?php } ?>
-            $this->saveDuplicateAction($model->id);
-        } else {
-            return $this->render('create', [
-                'model' => $model,
-            ]);
+                $this->saveDuplicateAction($model->id);
+            }
         }
+
+        return $this->render('create', [
+            'model' => $model,
+        ]);
     }
 
     /**
@@ -158,20 +160,22 @@ class <?= $controllerClass ?> extends <?= StringHelper::basename($generator->bas
     {
         $model = $this->findModel(<?= $actionParams ?>);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->save()) {
 <?php if ($imgFiled != '') { ?>
-            $imgUrl = $this->uploadFile();
-            if (!empty($imgUrl)) {
-                $model-><?= $imgFiled ?> = $imgUrl;
-                $model->save();
-            }
+                $imgUrl = $this->uploadFile();
+                if (!empty($imgUrl)) {
+                    $model-><?= $imgFiled ?> = $imgUrl;
+                    $model->save();
+                }
 <?php } ?>
-            $this->saveDuplicateAction($model->id);
-        } else {
-            return $this->render('update', [
-                'model' => $model,
-            ]);
+                $this->saveDuplicateAction($model->id);
+            }
         }
+
+        return $this->render('update', [
+            'model' => $model,
+        ]);
     }
 
     /**

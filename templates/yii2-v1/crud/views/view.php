@@ -62,7 +62,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 <?php
                 if (($tableSchema = $generator->getTableSchema()) === false) {
                     foreach ($generator->getColumnNames() as $name) {
-                        echo "                            '" . $name . "',\n";
+                        echo str_repeat(' ', 4 * 7) . "'" . $name . "',\n";
                     }
                 } else {
                     foreach ($generator->getTableSchema()->columns as $column) {
