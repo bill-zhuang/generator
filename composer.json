@@ -8,7 +8,7 @@
     "require": {
         "php": ">=5.4.0",
         "yiisoft/yii2": "~2.0.14",
-        "guzzlehttp/guzzle": "6.3.3",
+        "guzzlehttp/guzzle": "6.5.8",
         "endroid/qr-code": "*",
         "yiisoft/yii2-gii": "~2.0.0",
         "yidas/yii2-bower-asset": "2.0.13.1"
