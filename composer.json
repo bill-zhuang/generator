@@ -9,15 +9,17 @@
         "php": ">=5.4.0",
         "yiisoft/yii2": "~2.0.14",
         "guzzlehttp/guzzle": "6.3.3",
-        "endroid/qr-code": "*"
-    },
-    "require-dev": {
-        "yiisoft/yii2-gii": "~2.0.0"
+        "endroid/qr-code": "*",
+        "yiisoft/yii2-gii": "~2.0.0",
+        "yidas/yii2-bower-asset": "2.0.13.1"
     },
     "config": {
         "process-timeout": 1800,
         "fxp-asset": {
             "enabled": false
+        },
+        "allow-plugins": {
+            "yiisoft/yii2-composer": true
         }
     },
     "scripts": {

@@ -156,8 +156,10 @@ if (($tableSchema = $generator->getTableSchema()) === false) {
         ],
 <?php } ?>
         [
-            'class' => 'yii\grid\ActionColumn',
+            'class' => 'kartik\grid\ActionColumn',
             'header' => '操作',
+            'hAlign' => GridView::ALIGN_CENTER,
+            'vAlign' => GridView::ALIGN_MIDDLE,
             'template' => '{update} {delete}',
             'buttons' => [
                 'update' => function($url, $model){

@@ -22,7 +22,7 @@ class Yii2Controller extends Controller
     public static $templateFolderName = 'yii2-kartik'; //yii2-v1 table普通 yii2-kartik table用kartik
     public static $projectName = '';
     public static $generateBaseModel = false; //是否生成基类model
-    public static $baseModelFolderPath = '/common/models/'; //基类model文件路径
+    public static $baseModelFolderPath = ''; //基类model文件路径 eg. /common/models/ 根据baseNamespace处理 在beforeAction中处理不需要改了
     /**
      * 生成的继承model配置 格式 namespace => extend model folder path
      * @var array
@@ -31,16 +31,36 @@ class Yii2Controller extends Controller
         'backend\models' => '/backend/models/',
         //'api\models' => '/api/models/',
     ];
-    public static $crudFolderName = 'backend';
-    public static $crudNamespace = 'backend\models';
-    public static $crudFolderAlias = '@backend';
+    public static $crudFolderName = '';//eg. backend 根据$crudNamespace拆分后取第一个 在beforeAction中处理不需要改了
+    public static $crudNamespace = '';//eg. backend\models 根据$extendModelList取第一个 在beforeAction中处理不需要改了
+    public static $crudFolderAlias = '';//eg. @backend 根据$crudFolderName加@ 在beforeAction中处理不需要改了
+
+    /**
+     * 需要连接的db connect
+     * @return \yii\db\Connection
+     */
+    private static function getDbConnect()
+    {
+        return Yii::$app->db;
+    }
+
+    public function beforeAction($action)
+    {
+        self::$crudNamespace = array_key_first(self::$extendModelList);
+        self::$crudFolderName = explode('\\', self::$crudNamespace)[0];
+        self::$crudFolderAlias = '@' . self::$crudFolderName;
+        self::$baseModelFolderPath = '/'
+            . implode('/', explode('\\', self::$baseNamespace)) . '/';
+        //
+        return parent::beforeAction($action);
+    }
 
     public function actionM()
     {
         $test = (new ModelGenerator());
         foreach (self::$tables as $tableName) {
             $processName = $tableName;
-            $setTablePrefix = Yii::$app->db->tablePrefix;
+            $setTablePrefix = self::getDbConnect()->tablePrefix;
             if ($setTablePrefix != '') {
                 $processName = preg_replace("/^{$setTablePrefix}/", '', $processName);
             }
@@ -52,7 +72,7 @@ class Yii2Controller extends Controller
 
 
             $relations = Util::callProtectMethod('\yii\gii\generators\model\Generator', 'generateRelations');
-            $db = Util::getDB();
+            $db = self::getDbConnect();
             // model :
             $modelClassName = Util::callProtectMethod('\yii\gii\generators\model\Generator', 'generateClassName');
             $queryClassName = ($test->generateQuery) ? $test->generateQueryClassName($modelClassName) : false;
@@ -137,7 +157,7 @@ class Yii2Controller extends Controller
         }
         foreach (self::$tables as $tableName) {
             $processName = $tableName;
-            $setTablePrefix = Yii::$app->db->tablePrefix;
+            $setTablePrefix = self::getDbConnect()->tablePrefix;
             if ($setTablePrefix != '') {
                 $processName = preg_replace("/^{$setTablePrefix}/", '', $processName);
             }
