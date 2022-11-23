@@ -41,7 +41,7 @@ use <?= $generator->indexWidgetType === 'grid' ? "kartik\\grid\\GridView" : "yii
 /* @var $dataProvider yii\data\ActiveDataProvider */
 /* @var $params array */
 
-$this->title = <?= "'" . \app\models\Util::getTableComment($generator->tableSchema->name) . "管理'" ?>;
+$this->title = <?= "'" . \app\models\Util::getTableComment($generator->tableSchema->name, $generator->modelClass) . "管理'" ?>;
 $this->params['breadcrumbs'][] = $this->title;
 
 ?>

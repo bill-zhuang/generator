@@ -13,6 +13,7 @@ use Yii;
 
 class Yii2Controller extends Controller
 {
+    public static $dbConfig = 'db';
     public static $tables = [
         '',
     ];
@@ -38,10 +39,11 @@ class Yii2Controller extends Controller
     /**
      * 需要连接的db connect
      * @return \yii\db\Connection
+     * @throws
      */
     private static function getDbConnect()
     {
-        return Yii::$app->db;
+        return Yii::$app->get(self::$dbConfig, false);
     }
 
     public function beforeAction($action)
@@ -58,6 +60,7 @@ class Yii2Controller extends Controller
     public function actionM()
     {
         $test = (new ModelGenerator());
+        $test->db = self::$dbConfig;
         foreach (self::$tables as $tableName) {
             $processName = $tableName;
             $setTablePrefix = self::getDbConnect()->tablePrefix;

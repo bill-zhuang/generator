@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\db\ActiveRecord;
 use yii\db\Schema;
 
 class Util
@@ -79,12 +80,18 @@ class Util
     /**
      * Created by bill
      * @param $tableName
+     * @param $modelClass ActiveRecord
      * @return string|string[]|null
      * @throws \yii\db\Exception
      */
-    public static function getTableComment($tableName)
+    public static function getTableComment($tableName, $modelClass = null)
     {
-        $createTableSql = self::getDB()->createCommand('show create table ' . $tableName)->queryAll()[0]['Create Table'];
+        if ($modelClass === null) {
+            $db = self::getDB();
+        } else {
+            $db = $modelClass::getDb();
+        }
+        $createTableSql = $db->createCommand('show create table ' . $tableName)->queryAll()[0]['Create Table'];
         preg_match('/ENGINE[^\']+\'([^\']+)\'/', $createTableSql, $commentMatches);
         if (isset($commentMatches[1])) {
             $tableComment = $commentMatches[1];

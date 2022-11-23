@@ -17,7 +17,7 @@ use yii\helpers\Html;
 /* @var $model <?= ltrim($generator->modelClass, '\\') ?> */
 
 $this->title = <?= $generator->generateString('修改') ?>;
-$this->params['breadcrumbs'][] = ['label' => <?= "'" . \app\models\Util::getTableComment($generator->tableSchema->name) . "管理'" ?>, 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => <?= "'" . \app\models\Util::getTableComment($generator->tableSchema->name, $generator->modelClass) . "管理'" ?>, 'url' => ['index']];
 $this->params['breadcrumbs'][] = <?= $generator->generateString('修改') ?>;
 ?>
 <section class="scrollable padder">
