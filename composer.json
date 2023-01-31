@@ -10,7 +10,7 @@
         "yiisoft/yii2": "~2.0.14",
         "guzzlehttp/guzzle": "6.3.3",
         "endroid/qr-code": "*",
-        "yiisoft/yii2-gii": "~2.0.0",
+        "yiisoft/yii2-gii": "~2.2.5",
         "yidas/yii2-bower-asset": "2.0.13.1"
     },
     "config": {
