@@ -38,6 +38,7 @@ class ZhihuController extends Controller
                 } else {
                     $questionTitle = $value['favitems'][0]['content']['title'];
                 }
+                $questionTitle = urldecode($questionTitle);
                 $defaultUrl = $value['favitems'][0]['content']['url'];
                 if (strpos($defaultUrl, 'answers') !== false) {
                     $answerUrl = 'https://www.zhihu.com/answer/' . $value['favitems'][0]['content']['id'];
@@ -59,6 +60,7 @@ class ZhihuController extends Controller
                             'create_time' => date('Y-m-d H:i:s')])
                         ->execute();
                 } else {
+                    continue;
                     $localDb->createCommand()->update('zhihu_hot_collection',
                         ['title' => $questionTitle, 'abbr_answer' => $abbrContent, 'content' => $content, 'answer_url' => $answerUrl],
                         ['answer_url' => $answerUrl])
@@ -70,5 +72,100 @@ class ZhihuController extends Controller
             }
             $offset += 10;
         }
+    }
+
+    public function actionDoSalt($all = false)
+    {
+        $localDb = \Yii::$app->local_db;
+        $yesterdayStartStamp = strtotime(date('Y-m-d')) - 86400;
+        //
+        $regexPage = '/\/page\/(\d+)\/#board/';
+        $regexUrl = '/<a\s+href="([^"]+)"\s+target="_self">([^<]+)<\/a>/';
+        $regPublish = '/<time\s+datetime="([^"]+)"\s+pubdate>/';
+        $regDesc = '/<meta name="description" content="([^"]+)">/';
+        $regContent = '/<div\s+class="markdown-body">(.*?)<\/div>/s';
+        $url = 'https://onehu.xyz';
+        $headers = [
+            'User-Agent:Baiduspider'
+        ];
+        $content = Util::curlGet($url, [], $headers);
+        $isPage = preg_match_all($regexPage, $content, $pageMatches);
+        if (!$isPage) {
+            return;
+        }
+        $maxPage = max($pageMatches[1]);
+        for ($page = 1; $page <= $maxPage; $page++) {
+            echo $page . PHP_EOL;
+            if ($page != 1) {
+                $url = 'https://onehu.xyz/page/' . $page;
+                $content = Util::curlGet($url);
+            }
+            $isUrl = preg_match_all($regexUrl, $content, $urlMatches);
+            if (!$isUrl) {
+                break;
+            }
+            $isPublish = preg_match_all($regPublish, $content, $publishMatches);
+            foreach ($urlMatches[1] as $idx => $urlVal) {
+                if (!$all && strtotime($publishMatches[1][$idx]) < $yesterdayStartStamp) {
+                    break 2;
+                }
+                $title = str_replace("\n", '', $urlMatches[2][$idx]);
+                $url = urldecode('https://onehu.xyz'. $urlVal);
+                $data = $localDb->createCommand("select id from zhihu_salt where answer_url='{$url}'")->queryOne();
+                if (!empty($data)) {
+                    continue;
+                }
+
+                $detailContent = Util::curlGet($url, [], $headers);
+                preg_match($regContent, $detailContent, $contentMatches);
+                preg_match($regDesc, $detailContent, $descMatches);
+                //echo $title . "\t\"" . $url . "\"" . PHP_EOL;
+                if (isset($descMatches[1]) && isset($contentMatches[1])) {
+                    $filterContent = str_replace(['<p>.<img src="/../1.png" srcset="/img/loading.gif" lazyload alt="公号" title="公号"></p>',
+                        '<center>关注不迷路~</center>'], ['', ''], $contentMatches[1]);
+                    $localDb->createCommand()->insert('zhihu_salt',
+                        ['title' => $title, 'abbr_answer' => $descMatches[1], 'content' => $filterContent, 'answer_url' => $url,
+                            'create_time' => date('Y-m-d H:i:s')])
+                        ->execute();
+                } else {
+                    echo $title . "\t\"" . $url . "\"" . $detailContent . PHP_EOL;
+                }
+            }
+        }
+    }
+
+    public function actionDoSaltEmptyContent()
+    {
+        $localDb = \Yii::$app->local_db;
+        $data = $localDb->createCommand("select id, answer_url from zhihu_salt where abbr_answer=''")->queryAll();
+        if (empty($data)) {
+            return;
+        }
+
+        $headers = [
+            'User-Agent:Baiduspider'
+        ];
+        $regDesc = '/<meta name="description" content="([^"]+)">/';
+        $regContent = '/<div\s+class="markdown-body">(.*?)<\/div>/s';
+
+        foreach ($data as $key => $value) {
+            echo $value['id'] . PHP_EOL;
+            $url = $value['answer_url'];
+            $detailContent = Util::curlGet($url, [], $headers);
+            preg_match($regContent, $detailContent, $contentMatches);
+            preg_match($regDesc, $detailContent, $descMatches);
+            //echo $title . "\t\"" . $url . "\"" . PHP_EOL;
+            if (isset($descMatches[1]) && isset($contentMatches[1])) {
+                $filterContent = str_replace(['<p>.<img src="/../1.png" srcset="/img/loading.gif" lazyload alt="公号" title="公号"></p>',
+                    '<center>关注不迷路~</center>'], ['', ''], $contentMatches[1]);
+                $localDb->createCommand()->update('zhihu_salt',
+                    ['abbr_answer' => $descMatches[1], 'content' => $filterContent],
+                    ['id' => $value['id']])
+                    ->execute();
+            } else {
+                echo "\t\"" . $url . "\"" . $detailContent . PHP_EOL;
+            }
+        }
+
     }
 }
