@@ -54,7 +54,7 @@ use <?= ltrim($generator->searchModelClass, '\\') . (isset($searchModelAlias) ? 
 use yii\data\ActiveDataProvider;
 <?php endif; ?>
 use <?= ltrim($generator->baseControllerClass, '\\') ?>;
-use yii\helpers\Url;
+//use yii\helpers\Url;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 <?php if ($imgFiled != '') { echo 'use yii\web\UploadedFile;'; } ?>
@@ -85,12 +85,12 @@ class <?= $controllerClass ?> extends <?= StringHelper::basename($generator->bas
      */
     public function actionIndex()
     {
-        Url::remember();
+        //Url::remember();
 <?php if (!empty($generator->searchModelClass)): ?>
         $params = Yii::$app->request->queryParams;
         $searchModel = new <?= isset($searchModelAlias) ? $searchModelAlias : $searchModelClass ?>();
         $dataProvider = $searchModel->search($params);
-        $dataProvider->sort = false;
+        //$dataProvider->sort = false;
 
         return $this->render('index', [
             'searchModel' => $searchModel,

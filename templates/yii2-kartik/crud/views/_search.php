@@ -21,7 +21,7 @@ use yii\widgets\ActiveForm;
 <?= "<?php " ?>$form = ActiveForm::begin([
     'action' => ['index'],
     'method' => 'get',
-    "options" => ['class' => 'form-inline'],
+    "options" => ['class' => 'form-inline', 'autocomplete' => 'off'],
     'fieldConfig' => [
         'template' => "{input}",
         'labelOptions' => [

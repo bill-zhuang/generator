@@ -80,16 +80,16 @@ $this->params['breadcrumbs'][] = $this->title;
     'responsiveWrap' => false,
     'panel' => [
         'heading' => '<h3 class="panel-title">' . $this->title . '</h3>',
-        'type' => 'default',
+        'type' => 'info',
         'after' => false,
-        'before' =>  Html::a('新建', ['create'], ['class' => 'btn btn-success pull-left']) ,
+        'before' => Html::a('新建', ['create'], ['class' => 'btn btn-success pull-left']),
     ],
     'toolbar' => [
         [
             'content' => $this->render("_search", ['model' => $searchModel, 'params' => $params])
         ],
-        '{export}',
-        '{toggleData}',
+        //'{export}',
+        //'{toggleData}',
     ],
     <?= !empty($generator->searchModelClass) ? "'columns' => [\n" : "'columns' => [\n"; ?>
         ['class' => 'kartik\grid\SerialColumn', 'header' => '序号',],
@@ -97,7 +97,7 @@ $this->params['breadcrumbs'][] = $this->title;
 if (($tableSchema = $generator->getTableSchema()) === false) {
     foreach ($generator->getColumnNames() as $name) { ?>
         [
-            'header' => 'todo',
+            'label' => 'todo',
             'attribute' => '<?= $name ?>',
             'hAlign' => GridView::ALIGN_CENTER,
             'vAlign' => GridView::ALIGN_MIDDLE,
@@ -110,7 +110,7 @@ if (($tableSchema = $generator->getTableSchema()) === false) {
             continue;
         } ?>
         [
-            'header' => '<?= !empty($column->comment) ? $column->comment : $column->name ?>',
+            'label' => '<?= !empty($column->comment) ? $column->comment : $column->name ?>',
             'attribute' => '<?= $column->name . ($format === 'text' ? "" : ":" . $format) ?>',
             'hAlign' => GridView::ALIGN_CENTER,
             'vAlign' => GridView::ALIGN_MIDDLE,
