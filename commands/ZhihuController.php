@@ -110,13 +110,14 @@ class ZhihuController extends Controller
                     break 2;
                 }
                 $title = str_replace("\n", '', $urlMatches[2][$idx]);
-                $url = urldecode('https://onehu.xyz'. $urlVal);
+                $originUrl = 'https://onehu.xyz'. $urlVal;
+                $url = urldecode($originUrl);
                 $data = $localDb->createCommand("select id from zhihu_salt where answer_url='{$url}'")->queryOne();
                 if (!empty($data)) {
                     continue;
                 }
 
-                $detailContent = Util::curlGet($url, [], $headers);
+                $detailContent = Util::curlGet($originUrl, [], $headers);
                 preg_match($regContent, $detailContent, $contentMatches);
                 preg_match($regDesc, $detailContent, $descMatches);
                 //echo $title . "\t\"" . $url . "\"" . PHP_EOL;
