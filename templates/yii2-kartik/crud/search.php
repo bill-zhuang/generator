@@ -18,6 +18,8 @@ $rules = $generator->generateSearchRules();
 $labels = $generator->generateSearchLabels();
 $searchAttributes = $generator->getSearchAttributes();
 $searchConditions = $generator->generateSearchConditions();
+$existStatusField = in_array('status', $searchAttributes);
+$existIdField = in_array('id', $searchAttributes);
 
 echo "<?php\n";
 ?>
@@ -64,12 +66,15 @@ class <?= $searchModelClass ?> extends <?= isset($modelAlias) ? $modelAlias : $m
     public function search($params)
     {
         $query = <?= isset($modelAlias) ? $modelAlias : $modelClass ?>::find()
+<?php if ($existStatusField) { ?>
             ->andWhere([
                 'status' => self::STATUS_VALID,
             ])
+<?php } ?>
+<?php if ($existIdField) { ?>
             ->orderBy([
                 'id' => SORT_DESC,
-            ]);
+            ])<?php } ?>;
 
         // add conditions that should always apply here
 

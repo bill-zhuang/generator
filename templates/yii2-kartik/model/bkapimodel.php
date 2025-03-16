@@ -16,18 +16,25 @@ namespace <?= $generator->ns ?>;
 
 class <?= $className ?> extends <?= $extendClassName . PHP_EOL ?>
 {
-    const STATUS_VALID = 1;
-    const STATUS_INVALID = 2;
-
 <?php
 $enableFlag = false;
+$stateFlag = false;
 foreach ($tableSchema->columns as $column) {
     if (strpos($column->name, 'enable') !== false) {
         $enableFlag = true;
-        break;
+        //break;
+    }
+    if (strpos($column->name, 'state') !== false || strpos($column->name, 'status') !== false) {
+        $stateFlag = true;
+        //break;
     }
 }
-if ($enableFlag) {?>
+if ($stateFlag) { ?>
+    const STATUS_VALID = 1;
+    const STATUS_INVALID = 2;
+
+<?php } ?>
+<?php if ($enableFlag) {?>
     const ENABLE_YES = 1;
     const ENABLE_NO = 2;
 
