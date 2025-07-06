@@ -74,6 +74,81 @@ class ZhihuController extends Controller
         }
     }
 
+    public function actionDoV1()
+    {
+        $localDb = \Yii::$app->local_db;
+        if (!($localDb instanceof Connection)) {
+            return;
+        }
+        $url = 'https://www.zhihu.com/explore';
+        $loopCnt = 20;
+        while ($loopCnt) {
+            $headers = [
+                'User-Agent:Baiduspider'
+            ];
+            $htmlData = Util::curlGet($url, [], $headers);
+            $flag = preg_match('/(\{"initialState.*"use_cached_supported_countries":"1"}})<\\/script/', $htmlData, $matches);
+            if ($flag) {
+                $decode = json_decode($matches[1], true);
+                //var_dump(json_last_error());
+                $decodeData = ($decode['initialState']['explore']['collections']);
+            }
+            if (!isset($decodeData)) {
+                continue;
+            }
+
+            foreach ($decodeData as $value) {
+                if (!isset($value['favitems'])) {
+                    continue;
+                }
+                $itemCnt = count($value['favitems']);//default have 2 items
+                for ($i = 0; $i < $itemCnt; $i++) {
+                    if (!isset($value['favitems'][$i]['content'])) {
+                        continue;
+                    }
+                    if (isset($value['favitems'][$i]['content']['question'])) {
+                        $questionTitle = $value['favitems'][$i]['content']['question']['title'];
+                    } else {
+                        $questionTitle = $value['favitems'][$i]['content']['title'];
+                    }
+                    $questionTitle = urldecode($questionTitle);
+                    $defaultUrl = $value['favitems'][$i]['content']['url'];
+                    if (strpos($defaultUrl, 'answers') !== false) {
+                        $answerUrl = 'https://www.zhihu.com/answer/' . $value['favitems'][$i]['content']['id'];
+                    } else {
+                        $answerUrl = $defaultUrl;
+                    }
+                    $abbrContent = '';
+                    $content = '';
+                    if (isset($value['favitems'][$i]['content']['excerpt'])) {
+                        $abbrContent = $value['favitems'][$i]['content']['excerpt'];
+                    }
+                    if (isset($value['favitems'][$i]['content']['content'])) {
+                        $content = ($value['favitems'][$i]['content']['content']);
+                    }
+                    $data = $localDb->createCommand("select id from zhihu_hot_collection where answer_url='{$answerUrl}'")->queryOne();
+                    if (empty($data)) {
+                        $localDb->createCommand()->insert('zhihu_hot_collection',
+                            ['title' => $questionTitle, 'abbr_answer' => $abbrContent, 'content' => $content, 'answer_url' => $answerUrl,
+                                'create_time' => date('Y-m-d H:i:s')])
+                            ->execute();
+                    } else {
+                        continue;
+                        $localDb->createCommand()->update('zhihu_hot_collection',
+                            ['title' => $questionTitle, 'abbr_answer' => $abbrContent, 'content' => $content, 'answer_url' => $answerUrl],
+                            ['answer_url' => $answerUrl])
+                            ->execute();
+                    }
+                }
+
+            }
+            /*if (isset($decodeData['paging']['is_end']) && $decodeData['paging']['is_end']) {
+                break;
+            }*/
+            $loopCnt--;
+        }
+    }
+
     public function actionDoSalt($all = false)
     {
         $localDb = \Yii::$app->local_db;
@@ -168,5 +243,64 @@ class ZhihuController extends Controller
             }
         }
 
+    }
+
+    public function actionDoSaltAnother($all = false)
+    {
+        $localDb = \Yii::$app->local_db;
+        $regexPage = "/<span class=\"current\-page\">\d\s+\/\s+(\d+)<\/span>/";//
+        $regexUrl = '/<a href="(\/post[^"]+)">([^<]+)<\/a>/';
+        $regContent = '/<div class="post\-content">(.*?)<\/div>/';
+        $regDesc = "/<meta name='description' content=\"([^\"]+)\">/";
+        $url = 'https://www.chneye.com/all';
+        $headers = [
+            'User-Agent:Baiduspider'
+        ];
+        $content = Util::curlGet($url, [], $headers);
+        if (!$content) {
+            echo 'Get content failed.' . PHP_EOL;
+        }
+        $isPage = preg_match_all($regexPage, $content, $pageMatches);
+        if (!$isPage) {
+            return;
+        }
+        $maxPage = intval($pageMatches[1]);
+        for ($page = 1; $page <= $maxPage; $page++) {
+            echo $page . PHP_EOL;
+            if ($page != 1) {
+                $url = 'https://www.chneye.com/all/?page=' . $page;
+                $content = Util::curlGet($url);
+            }
+            $isUrl = preg_match_all($regexUrl, $content, $urlMatches);
+            if (!$isUrl) {
+                break;
+            }
+            foreach ($urlMatches[1] as $idx => $urlVal) {
+                /*if (!$all && strtotime($publishMatches[1][$idx]) < $yesterdayStartStamp) {
+                    break 2;
+                }*/
+                $title = str_replace("\n", '', $urlMatches[2][$idx]);
+                $originUrl = 'https://www.chneye.com'. $urlVal;
+                $url = urldecode($originUrl);
+                $data = $localDb->createCommand("select id from zhihu_salt_test where answer_url='{$url}'")->queryOne();
+                if (!empty($data)) {
+                    continue;
+                }
+
+                $detailContent = Util::curlGet($originUrl, [], $headers);
+                preg_match($regContent, $detailContent, $contentMatches);
+                preg_match($regDesc, $detailContent, $descMatches);
+                //echo $title . "\t\"" . $url . "\"" . PHP_EOL;
+                if (isset($descMatches[1]) && isset($contentMatches[1])) {
+                    $filterContent = $contentMatches[1];
+                    $localDb->createCommand()->insert('zhihu_salt_test',
+                        ['title' => $title, 'abbr_answer' => $descMatches[1], 'content' => $filterContent, 'answer_url' => $url,
+                            'create_time' => date('Y-m-d H:i:s')])
+                        ->execute();
+                } else {
+                    echo $title . "\t\"" . $url . "\"" . $detailContent . PHP_EOL;
+                }
+            }
+        }
     }
 }
