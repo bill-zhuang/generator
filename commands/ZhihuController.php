@@ -303,4 +303,75 @@ class ZhihuController extends Controller
             }
         }
     }
+
+    public function actionDoDytt($all = false)
+    {
+        $localDb = \Yii::$app->local_db;
+        $regexPage = "/<a href='(list[^']+)'>([^<]+)<\/a>/";//
+        $regexUrl = '/<a href="([^"]+\.html)" class="ulink">(.*?)<\/a>/';
+        $urls = [
+            1 => 'https://dydytt.net/html/gndy/china/index.html',
+            2 => 'https://dydytt.net/html/gndy/oumei/index.html',
+            3 => 'https://dydytt.net/html/gndy/rihan/index.html',
+            4 => 'https://dydytt.net/html/tv/hytv/index.html',
+            5 => 'https://dydytt.net/html/tv/rihantv/index.html',
+            6 => 'https://dydytt.net/html/tv/oumeitv/index.html',
+        ];;
+        $headers = [
+            'User-Agent:Baiduspider'
+        ];
+        foreach ($urls as $tag => $oneUrl) {
+            echo 'Tag: ' . $tag . PHP_EOL;
+            $content = Util::curlGet($oneUrl, [], $headers);
+            if (!$content) {
+                echo 'Get content failed.' . PHP_EOL;
+            }
+            $isPage = preg_match_all($regexPage, $content, $matchesPaginator);
+            if (!$isPage) {
+                continue;
+            }
+            $maxPage = 1;
+            $maxPageContent = '';
+            foreach ($matchesPaginator[2] as $idx => $name) {
+                $covertName = mb_convert_encoding($name, 'utf8', 'gb2312');
+                if ($covertName == '末页') {
+                    $flagTotalPage = preg_match('/_(\d+)\.html/', $matchesPaginator[1][$idx], $matches);
+                    if ($flagTotalPage) {
+                        $maxPage = $matches[1];
+                        $maxPageContent = $matchesPaginator[1][$idx];
+                    }
+                }
+            }
+            echo 'Max page: ' . $maxPage . PHP_EOL;
+            for ($page = 1; $page <= $maxPage; $page++) {
+                echo $page . PHP_EOL;
+                if ($page != 1) {//https://dydytt.net/html/gndy/china/list_4_1.html
+                    $pageUrl = str_replace('/index.html', '/', $oneUrl)
+                        . str_replace("{$maxPage}.html", "{$page}.html", $maxPageContent);
+                    //echo $pageUrl . PHP_EOL;
+                    $content = Util::curlGet($pageUrl);
+                }
+                $isUrl = preg_match_all($regexUrl, $content, $urlMatches);
+                if (!$isUrl) {
+                    break;
+                }
+                foreach ($urlMatches[1] as $idx => $urlVal) {
+                    $title = mb_convert_encoding($urlMatches[2][$idx], 'utf8', 'gb2312');
+                    //$title = $urlMatches[2][$idx];
+                    $originUrl = 'https://dydytt.net'. $urlVal;
+                    $url = urldecode($originUrl);
+                    //echo $title . "\t" . $url . PHP_EOL;exit;
+                    $data = $localDb->createCommand("select id from dytt where dytt_url='{$url}'")->queryOne();
+                    if (!empty($data)) {
+                        break 2;
+                    }
+
+                    $localDb->createCommand()->insert('dytt',
+                        ['title' => $title, 'dytt_url' => $url, 'tag' => $tag, 'create_time' => date('Y-m-d H:i:s')])
+                        ->execute();
+                }
+                sleep(1);
+            }
+        }
+    }
 }
