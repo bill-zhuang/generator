@@ -81,20 +81,26 @@ class ZhihuController extends Controller
             return;
         }
         $url = 'https://www.zhihu.com/explore';
+        if (!array_key_exists(\Yii::$app->params, 'zhihu')) {
+            echo 'Not set zhihu params!';
+            exit;
+        }
+        $zhihuPrams = \Yii::$app->params['zhihu'];
         $loopCnt = 20;
         while ($loopCnt) {
             $headers = [
-                'User-Agent:Baiduspider'
+                $zhihuPrams['cookie'],
+                $zhihuPrams['userAgent'],
             ];
             $htmlData = Util::curlGet($url, [], $headers);
-            $flag = preg_match('/(\{"initialState.*"use_cached_supported_countries":"1"}})<\\/script/', $htmlData, $matches);
+            $flag = preg_match('/(\{"initialState.*}})<\\/script/', $htmlData, $matches);
             if ($flag) {
                 $decode = json_decode($matches[1], true);
                 //var_dump(json_last_error());
                 $decodeData = ($decode['initialState']['explore']['collections']);
             }
             if (!isset($decodeData)) {
-                continue;
+                break;
             }
 
             foreach ($decodeData as $value) {
@@ -251,7 +257,7 @@ class ZhihuController extends Controller
         $regexPage = "/<span class=\"current\-page\">\d\s+\/\s+(\d+)<\/span>/";//
         $regexUrl = '/<a href="(\/post[^"]+)">([^<]+)<\/a>/';
         $regContent = '/<div class="post\-content">(.*?)<\/div>/';
-        $regDesc = "/<meta name='description' content=\"([^\"]+)\">/";
+        $regDesc = "/<meta name=[\"']{1}description[\"']{1} content=\"([^\"]+)\">/";
         $url = 'https://www.chneye.com/all';
         $headers = [
             'User-Agent:Baiduspider'
@@ -264,7 +270,7 @@ class ZhihuController extends Controller
         if (!$isPage) {
             return;
         }
-        $maxPage = intval($pageMatches[1]);
+        $maxPage = intval($pageMatches[1][0]);
         for ($page = 1; $page <= $maxPage; $page++) {
             echo $page . PHP_EOL;
             if ($page != 1) {

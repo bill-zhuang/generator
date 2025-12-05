@@ -145,5 +145,28 @@ class Util
 
         return $result;
     }
+
+    public static function curlGetHeader($url)
+    {
+        $ch = curl_init($url);
+        $options = [
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_FOLLOWLOCATION => 1,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_HEADER => true,
+            CURLOPT_HTTPHEADER => ['User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36']
+        ];
+
+        //curl的额外参数
+        curl_setopt_array($ch, $options);
+        $result = curl_exec($ch);
+        $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $header = substr($result, 0, $headerSize);
+        $body = substr($result, $headerSize);
+
+        curl_close($ch);
+        return explode("\r\n", $header);
+    }
 }
  
