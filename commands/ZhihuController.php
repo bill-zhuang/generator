@@ -81,7 +81,7 @@ class ZhihuController extends Controller
             return;
         }
         $url = 'https://www.zhihu.com/explore';
-        if (!array_key_exists(\Yii::$app->params, 'zhihu')) {
+        if (!array_key_exists('zhihu', \Yii::$app->params)) {
             echo 'Not set zhihu params!';
             exit;
         }
